@@ -1,13 +1,16 @@
 import express from 'express';
 import seller from '../models/seller.js';
 const router = express.Router();
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 // const fetchuser = require('../middleware/fetchuser');
 
-const JWT_SECRET = 'immazonjwttokenkey';
+const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
 // POST request for a seller to sign up to Immazon
 router.post('/createseller',[

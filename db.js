@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
+import dotenv from 'dotenv';
+dotenv.config();
 
-const mongoURI = "mongodb+srv://bhanunegi:immazonproject@e-commerce.npdkq1r.mongodb.net/ShopOwners"; 
+const mongoURI = process.env.URI
 
 const connectToMongo = async()=>{
     await mongoose.connect(mongoURI).then(()=>{
