@@ -77,4 +77,62 @@ router.post('/createseller',[
 
 });
 
+
+// POST request to login an exsisting seller.
+router.post('/login',[
+    body('email', 'Email length should be 5 to 30 characters').isEmail().isLength({ min: 5, max: 30 }),
+    body('password', 'Password can\'t be blank').exists(),
+],async (req,res)=>{
+    let success = false;
+
+    // Validating the entries entered by the seller.
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.statusCode = 400;
+        res.json({success, errors: errors.array()});
+    }
+
+    // Destructuring email and password from request
+    const { email, password } = req.body;
+
+    try {
+        // Checking if the seller dies exisits in the database.
+        let user = await seller.findOne({ email });
+        if (!user) {
+            res.statusCode = 400;
+            return res.json({success, errors: "Please enter valid credentials."});            
+        }
+
+        // validating password
+        const isCorrectPassword = await bcrypt.compare(password, user.password);
+
+        if (!isCorrectPassword) {
+            res.statusCode = 400;
+            return res.json({success, errors: "Please enter valid credentials"});
+        }
+
+        const data = {
+            user:{
+                id: user.id,
+            }
+        }
+
+        // Generating JWT token
+        const authtoken = jwt.sign(data, JWT_SECRET);
+        console.log(authtoken);
+        success = true;
+        res.json({success, authtoken});
+
+    } catch (error) {
+        // console.log(err);
+        res.statusCode = 500;
+        res.json({
+            success: false,
+            error: error
+        });
+    }
+
+
+})
+
 export default router;
