@@ -8,7 +8,7 @@ dotenv.config();
 import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-// const fetchuser = require('../middleware/fetchuser');
+import fetchseller from '../middleware/fetchseller.js';
 
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
@@ -135,4 +135,23 @@ router.post('/login',[
 
 })
 
+
+// GET request to get the seller data.
+router.get('/getseller',fetchseller,async (req,res)=>{
+    // USing the middleware fetchseller we find out that the seller is authentic or not. Once verified we then head towards next operation that is fetching its attributes (but not the password).
+    
+    try {
+        let sellerId  = req.user.id;
+        const user = await seller.findById(sellerId).select("-password");
+        res.send(user);
+    } catch (error) {
+        // console.log(error);
+        res.statusCode = 500;
+        res.json({
+            success :false,
+            error: error,
+        });
+    }
+
+})
 export default router;
