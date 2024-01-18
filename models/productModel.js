@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 import productSchema from "./schema/product.js";
 
-const productModel = mongoose.model('product', productSchema);
-export default productModel;
+const createProductModel = (sellerId) => {
+    const collectionName = `${sellerId}`;
+    const productModel = mongoose.model(collectionName, productSchema);
+    return productModel;
+  };
+  
+  export default createProductModel;

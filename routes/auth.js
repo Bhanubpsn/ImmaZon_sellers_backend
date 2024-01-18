@@ -11,6 +11,7 @@ import jwt from 'jsonwebtoken';
 import fetchseller from '../middleware/fetchseller.js';
 
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
+let sellerId;
 
 // POST request for a seller to sign up to Immazon
 router.post('/createseller',[
@@ -141,7 +142,8 @@ router.get('/getseller',fetchseller,async (req,res)=>{
     // USing the middleware fetchseller we find out that the seller is authentic or not. Once verified we then head towards next operation that is fetching its attributes (but not the password).
     
     try {
-        let sellerId  = req.user.id;
+        sellerId  = req.user.id;
+        console.log(sellerId);
         const user = await seller.findById(sellerId).select("-password");
         res.send(user);
     } catch (error) {
@@ -154,4 +156,6 @@ router.get('/getseller',fetchseller,async (req,res)=>{
     }
 
 })
+
+
 export default router;
