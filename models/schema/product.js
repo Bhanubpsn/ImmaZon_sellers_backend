@@ -28,6 +28,11 @@ const productSchema = new Schema({
     sellerid:{
         type: String,
         required: true,
+    },
+    image:{
+        type: String,
+        required: false,
+        default: "",
     }
 
 });

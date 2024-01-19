@@ -1,8 +1,21 @@
 import express from 'express';
 import createProductModel from '../models/productModel.js';
+import { initializeApp } from "firebase/app";
+import { getStorage, ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import multer from "multer";
 const router = express.Router();
 import { body, validationResult } from 'express-validator';
 import fetchseller from '../middleware/fetchseller.js';
+import config from '../config/firebaseconfig.js';
+
+//Initialize a firebase application.
+initializeApp(config.firebaseConfig);
+
+// Initialize Cloud Storage and get a reference to the service
+const storage = getStorage();
+
+// Setting up multer as a middleware to grab photo uploads
+const upload = multer({ storage: multer.memoryStorage() });
 
 // this is a custom validation function. Pretty cool right? ;) <-- wink
 const validateTags = (value) => {
@@ -84,6 +97,64 @@ router.get('/getmyproducts/:id',async (req,res)=>{
     }
 })
 
+// DELETE request for seller to delete his/her products.
+router.delete('/deletemyproduct/:id',fetchseller,async (req,res)=>{
+
+    //Find the product to be deleted in the seller's collection.
+    let tobeDeletedProduct = await createProductModel(req.user.id).findById(req.params.id);
+
+    if (!tobeDeletedProduct) {
+        res.statusCode = 404;
+        res.send("404 Product not found :(");
+    }
+
+    if (tobeDeletedProduct.sellerid !== req.user.id) {
+        res.statusCode = 401;
+        res.send("This product dosn't seems to be yours *_*");
+    }
+
+    await createProductModel(req.user.id).findByIdAndDelete(req.params.id);
+    res.send("The product has been deleted :)");
+
+})
+
+// POST route to upload image of the image.
+router.post("/uploadproductimage/:sellerid/:productid", upload.single("image"), async (req, res) => {
+    //This image is the key name in the post body.
+
+    try {
+
+        if (!req.file) {
+            return res.status(400).send({ message: 'No file uploaded.' });
+        }
+
+        //Collection Reference jaise flutter me bnate hai and file name add krr diya.
+        const storageRef = ref(storage, `${req.params.sellerid}/${req.params.productid}`);
+
+        // Create file metadata including the content type
+        const metadata = {
+            contentType: req.file.mimetype,
+        };
+
+        // Upload the file in the bucket storage
+        const snapshot = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
+        //by using uploadBytesResumable we can control the progress of uploading like pause, resume, cancel
+
+        // Grab the public url
+        const downloadURL = await getDownloadURL(snapshot.ref);
+
+        console.log('File successfully uploaded.');
+        return res.status(200).json({
+            message: 'file uploaded to firebase storage',
+            name: req.file.originalname,
+            downloadURL: downloadURL
+        })
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        return res.status(400).send(error.message)
+    }
+});
+
 // PUT request for seller to update his/her products.
 router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
 
@@ -110,34 +181,16 @@ router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
     }
     if (productTags) {
         updatedProduct.tags = productTags;
-        console.log(updatedProduct.tags);
+    }
+    if (req.query.imageurl) {
+        const lastSlashIndex = req.query.imageurl.lastIndexOf("/");
+        const updatedImageUrl = req.query.imageurl.substring(0, lastSlashIndex) + "%2F" + req.query.imageurl.substring(lastSlashIndex + 1);
+        updatedProduct.image = `${(updatedImageUrl)}&token=${(req.query.token)}`;
     }
 
     await createProductModel(req.user.id).findByIdAndUpdate(req.params.id,{$set: updatedProduct},{new: false});
 
     res.json({updatedProduct});
-
-
-})
-
-// DELETE request for seller to delete his/her products.
-router.delete('/deletemyproduct/:id',fetchseller,async (req,res)=>{
-
-    //Find the product to be deleted in the seller's collection.
-    let tobeDeletedProduct = await createProductModel(req.user.id).findById(req.params.id);
-
-    if (!tobeDeletedProduct) {
-        res.statusCode = 404;
-        res.send("404 Product not found :(");
-    }
-
-    if (tobeDeletedProduct.sellerid !== req.user.id) {
-        res.statusCode = 401;
-        res.send("This product dosn't seems to be yours *_*");
-    }
-
-    await createProductModel(req.user.id).findByIdAndDelete(req.params.id);
-    res.send("The product has been deleted :)");
 
 })
 
