@@ -4,6 +4,7 @@ const router = express.Router();
 import { body, validationResult } from 'express-validator';
 import fetchseller from '../middleware/fetchseller.js';
 
+// this is a custom validation function. Pretty cool right? ;) <-- wink
 const validateTags = (value) => {
     if (!Array.isArray(value)) {
         throw new Error('Tags must be an array');
@@ -13,7 +14,7 @@ const validateTags = (value) => {
         throw new Error('Each element in tags must be a string');
     }
 
-    // You can add additional validation rules for tags if needed
+    // You can add additional validation rules for tags if needed.
 
     return true;
 };
@@ -66,7 +67,7 @@ router.get('/getmyproducts/:id',async (req,res)=>{
    
     // Ye do tarike se krr skta tha me
     // 1 being this way, by using parameters.
-    // 2nd being the way using query parameters. <-- I like this one more.
+    // 2nd being the way using query parameters. <-- I like this one more. seems coool.
 
 
     try {
@@ -94,11 +95,11 @@ router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
 
     if (!updatedProduct) {
         res.statusCode = 404;
-        res.send('404 Product not found');
+        res.send('404 Product not found :(');
     }
     if (updatedProduct.sellerid !== req.user.id) {
         res.statusCode = 401;
-        res.send('Invalid Product');
+        res.send("This product dosn't seems to be yours *_*");
     }
 
     if (productName) {
@@ -119,5 +120,25 @@ router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
 
 })
 
+// DELETE request for seller to delete his/her products.
+router.delete('/deletemyproduct/:id',fetchseller,async (req,res)=>{
+
+    //Find the product to be deleted in the seller's collection.
+    let tobeDeletedProduct = await createProductModel(req.user.id).findById(req.params.id);
+
+    if (!tobeDeletedProduct) {
+        res.statusCode = 404;
+        res.send("404 Product not found :(");
+    }
+
+    if (tobeDeletedProduct.sellerid !== req.user.id) {
+        res.statusCode = 401;
+        res.send("This product dosn't seems to be yours *_*");
+    }
+
+    await createProductModel(req.user.id).findByIdAndDelete(req.params.id);
+    res.send("The product has been deleted :)");
+
+})
 
 export default router;
