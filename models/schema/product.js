@@ -24,6 +24,10 @@ const productSchema = new Schema({
     tags:{
         type: [String],
         required: true,
+    },
+    sellerid:{
+        type: String,
+        required: true,
     }
 
 });

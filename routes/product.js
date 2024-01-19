@@ -2,6 +2,7 @@ import express from 'express';
 import createProductModel from '../models/productModel.js';
 const router = express.Router();
 import { body, validationResult } from 'express-validator';
+import fetchseller from '../middleware/fetchseller.js';
 
 const validateTags = (value) => {
     if (!Array.isArray(value)) {
@@ -40,6 +41,7 @@ router.post('/addmyproduct',[
             productname: req.body.productname,
             price: req.body.price,
             tags: req.body.tags,
+            sellerid: req.header('sellerid'),
         })
 
         // const data = {
@@ -60,11 +62,16 @@ router.post('/addmyproduct',[
 })
 
 // GET request for seller to get his/her all products.
-router.get('/getmyproducts',async (req,res)=>{
+router.get('/getmyproducts/:id',async (req,res)=>{
    
+    // Ye do tarike se krr skta tha me
+    // 1 being this way, by using parameters.
+    // 2nd being the way using query parameters. <-- I like this one more.
+
+
     try {
         
-        let sellerId = req.query.id;
+        let sellerId = req.params.id;
         console.log(sellerId);
         const myproducts = await createProductModel(sellerId).find();
         res.json(myproducts);
@@ -74,6 +81,42 @@ router.get('/getmyproducts',async (req,res)=>{
         console.log(error);
         res.send(error);
     }
+})
+
+// PUT request for seller to update his/her products.
+router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
+
+    // Destructuring the parameters tht ll be given in the request.
+    const {productName, productPrice, productTags} = req.body;
+
+    // First loading the product to be updated.
+    let updatedProduct = await createProductModel(req.user.id).findById(req.params.id);
+
+    if (!updatedProduct) {
+        res.statusCode = 404;
+        res.send('404 Product not found');
+    }
+    if (updatedProduct.sellerid !== req.user.id) {
+        res.statusCode = 401;
+        res.send('Invalid Product');
+    }
+
+    if (productName) {
+        updatedProduct.productname = productName;
+    }
+    if (productPrice) {
+        updatedProduct.price = productPrice;
+    }
+    if (productTags) {
+        updatedProduct.tags = productTags;
+        console.log(updatedProduct.tags);
+    }
+
+    await createProductModel(req.user.id).findByIdAndUpdate(req.params.id,{$set: updatedProduct},{new: false});
+
+    res.json({updatedProduct});
+
+
 })
 
 
