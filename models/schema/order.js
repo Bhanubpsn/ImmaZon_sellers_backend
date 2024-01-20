@@ -1,23 +1,31 @@
 import mongoose from "mongoose";
-import productSchema from "./product.js";
 const { Schema } = mongoose;
 
 const orderSchema = new Schema({
 
-    product: {
-        type : productSchema,
+    productId: {
+        type : String,
         required: true,
     },
-    userAddress: {
+    userId: {
         type: String,
         required: true,
     },
-    userName: {
+    sellerId: {
         type: String,
         required: true,
+
     },
-    userContect: {
+    color:{
         type: String,
+        defaultValue : "",
+    },
+    size:{
+        type: String,
+        defaultValue : "",
+    },
+    qantity: {
+        type: Number,
         required: true,
     }
     

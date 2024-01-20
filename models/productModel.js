@@ -5,6 +5,6 @@ const createProductModel = (sellerId) => {
     const collectionName = `${sellerId}`;
     const productModel = mongoose.model(collectionName, productSchema);
     return productModel;
-  };
+};
   
-  export default createProductModel;
+export default createProductModel;

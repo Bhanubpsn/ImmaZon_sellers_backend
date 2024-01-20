@@ -78,16 +78,18 @@ router.post('/addmyproduct',[
 // GET request for seller to get his/her all products.
 router.get('/getmyproducts/:id',async (req,res)=>{
    
-    // Ye do tarike se krr skta tha me
+    // Ye teen tarike se krr skta tha me
     // 1 being this way, by using parameters.
     // 2nd being the way using query parameters. <-- I like this one more. seems coool.
+    // 3rd by using seller id as the body parameter thru middlemare <-- Ye sabse safest method hai.
 
 
     try {
         
         let sellerId = req.params.id;
         console.log(sellerId);
-        const myproducts = await createProductModel(sellerId).find();
+        const productModel = createProductModel(sellerId);
+        const myproducts = await productModel.find();
         res.json(myproducts);
 
     } catch (error) {

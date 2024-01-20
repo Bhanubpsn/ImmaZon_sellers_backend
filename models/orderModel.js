@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 import orderSchema from "./schema/order.js";
 
-const orderModel = mongoose.model('order', orderSchema); 
-export default orderModel;
+const createOrderModel = (sellerId) => {
+    const collectionName = `${sellerId}`;
+    const orderModel = mongoose.model(collectionName, orderSchema);
+    return orderModel;
+};
+
+export default createOrderModel;
