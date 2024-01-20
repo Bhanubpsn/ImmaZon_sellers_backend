@@ -37,6 +37,7 @@ router.post('/addmyproduct',[
     body('productname', 'productname length should be >5 characters ').isLength({ min: 5,}),
     body('price', 'price length should be >1 characters').isDecimal().isLength({ min: 1,}),
     body('tags', 'There should be at least one tag in the product').custom(validateTags),
+    body('description', 'description length should be >10 characters').isLength({ min: 10,}),
 ],async (req,res)=>{
 
     let success = false;
@@ -56,6 +57,7 @@ router.post('/addmyproduct',[
             price: req.body.price,
             tags: req.body.tags,
             sellerid: req.header('sellerid'),
+            description: req.body.description,
         })
 
         // const data = {
@@ -161,7 +163,7 @@ router.post("/uploadproductimage/:sellerid/:productid", upload.single("image"), 
 router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
 
     // Destructuring the parameters tht ll be given in the request.
-    const {productName, productPrice, productTags} = req.body;
+    const {productName, productPrice, productTags, productDescription} = req.body;
 
     // First loading the product to be updated.
     let updatedProduct = await createProductModel(req.user.id).findById(req.params.id);
@@ -183,6 +185,9 @@ router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
     }
     if (productTags) {
         updatedProduct.tags = productTags;
+    }
+    if (productDescription) {
+        updatedProduct.description = productDescription;
     }
     if (req.query.imageurl) {
         const lastSlashIndex = req.query.imageurl.lastIndexOf("/");
