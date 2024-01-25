@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 import orderSchema from "./schema/order.js";
+import connectToMongo from "../db.js";
 
 const createOrderModel = (sellerId) => {
     const collectionName = `${sellerId}`;
-    const orderModel = mongoose.model(collectionName, orderSchema);
+    const orderModel = connectToMongo("Orders").model(collectionName, orderSchema);
     return orderModel;
 };
 

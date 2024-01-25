@@ -5,32 +5,40 @@ import authRoute from "./routes/auth.js"
 import productRoute from "./routes/product.js"
 import ordersRoute from "./routes/orders.js"
 import dotenv from 'dotenv';
+import changedb from "./config/changedb.js";
 dotenv.config();
 
 // Connecting to database 'ShopOwners'.By defalut.
-connectToMongo();
+// connectToMongo();
 
 const app = express();
 const port = process.env.port || 5000;
 
+const defaultDbConnection = connectToMongo();
+
 app.use(cors());
 app.use(express.json());
 
+
 app.use('/api/auth',async (req, res, next) => {
-    await connectToMongo();
+    const ordersDbConnection = connectToMongo("ShopOwners");
+    req.ordersDbConnection = ordersDbConnection;
     next();
 });
-app.use('/api/auth', authRoute)
+
+app.use('/api/auth', authRoute);
 
 app.use('/api/products',async (req, res, next) => {
-    await connectToMongo();
+    const ordersDbConnection = connectToMongo("ShopOwners");
+    req.ordersDbConnection = ordersDbConnection;
     next();
 });
-app.use('/api/products', productRoute)
+app.use('/api/products', productRoute);
 
 // Connecting to database 'Orders'.
 app.use('/api/orders',async (req, res, next) => {
-    await connectToMongo("Orders");
+    const ordersDbConnection = connectToMongo("Orders");
+    req.ordersDbConnection = ordersDbConnection;
     next();
 });
 

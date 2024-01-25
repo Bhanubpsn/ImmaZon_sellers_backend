@@ -19,4 +19,4 @@ const SellerSchema = new Schema({
     },
 });
 
-export default mongoose.model('seller',SellerSchema);
+export default SellerSchema;

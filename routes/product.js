@@ -7,6 +7,8 @@ const router = express.Router();
 import { body, validationResult } from 'express-validator';
 import fetchseller from '../middleware/fetchseller.js';
 import config from '../config/firebaseconfig.js';
+import productSchema from '../models/schema/product.js';
+import connectToMongo from '../db.js';
 
 //Initialize a firebase application.
 initializeApp(config.firebaseConfig);
@@ -41,7 +43,7 @@ router.post('/addmyproduct',[
 ],async (req,res)=>{
 
     let success = false;
-
+    const ordersDbConnection = connectToMongo("ShopOwners");
     // Validating correct entry length.
     const erros = validationResult(req);
     if(!erros.isEmpty()){
@@ -52,7 +54,7 @@ router.post('/addmyproduct',[
     try {
 
         //Creating a product inside the collection of the seller's id.
-        let product = await createProductModel(req.header('sellerid')).create({
+        let product = await ordersDbConnection.model(req.header('sellerid'), productSchema).create({
             productname: req.body.productname,
             price: req.body.price,
             tags: req.body.tags,
@@ -85,14 +87,14 @@ router.get('/getmyproducts/:id',async (req,res)=>{
     // 2nd being the way using query parameters. <-- I like this one more. seems coool.
     // 3rd by using seller id as the body parameter thru middlemare <-- Ye sabse safest method hai.
 
-
+    const ordersDbConnection = connectToMongo("ShopOwners");
     try {
         
         let sellerId = req.params.id;
         console.log(sellerId);
-        const productModel = createProductModel(sellerId);
+        const productModel = ordersDbConnection.model(sellerId, productSchema);
         const myproducts = await productModel.find();
-        res.json(myproducts);
+        res.json([myproducts]);
 
     } catch (error) {
         res.statusCode = 500;
@@ -103,9 +105,9 @@ router.get('/getmyproducts/:id',async (req,res)=>{
 
 // DELETE request for seller to delete his/her products.
 router.delete('/deletemyproduct/:id',fetchseller,async (req,res)=>{
-
+    const ordersDbConnection = connectToMongo("ShopOwners");
     //Find the product to be deleted in the seller's collection.
-    let tobeDeletedProduct = await createProductModel(req.user.id).findById(req.params.id);
+    let tobeDeletedProduct = await ordersDbConnection(req.user.id, productSchema).findById(req.params.id);
 
     if (!tobeDeletedProduct) {
         res.statusCode = 404;
@@ -123,9 +125,9 @@ router.delete('/deletemyproduct/:id',fetchseller,async (req,res)=>{
 })
 
 // POST route to upload image of the image.
-router.post("/uploadproductimage/:sellerid/:productid", upload.single("image"), async (req, res) => {
+router.get("/uploadproductimage/:sellerid/:productid", upload.single("image"), async (req, res) => {
     //This image is the key name in the post body.
-
+    const ordersDbConnection = connectToMongo("ShopOwners");
     try {
 
         if (!req.file) {
@@ -161,12 +163,12 @@ router.post("/uploadproductimage/:sellerid/:productid", upload.single("image"), 
 
 // PUT request for seller to update his/her products.
 router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
-
+    const ordersDbConnection = connectToMongo("ShopOwners");
     // Destructuring the parameters tht ll be given in the request.
     const {productName, productPrice, productTags, productDescription} = req.body;
 
     // First loading the product to be updated.
-    let updatedProduct = await createProductModel(req.user.id).findById(req.params.id);
+    let updatedProduct = await ordersDbConnection(req.user.id, productSchema).findById(req.params.id);
 
     if (!updatedProduct) {
         res.statusCode = 404;
@@ -195,7 +197,7 @@ router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
         updatedProduct.image = `${(updatedImageUrl)}&token=${(req.query.token)}`;
     }
 
-    await createProductModel(req.user.id).findByIdAndUpdate(req.params.id,{$set: updatedProduct},{new: false});
+    await ordersDbConnection(req.user.id, productSchema).findByIdAndUpdate(req.params.id,{$set: updatedProduct},{new: false});
 
     res.json({updatedProduct});
 
