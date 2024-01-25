@@ -165,10 +165,10 @@ router.get("/uploadproductimage/:sellerid/:productid", upload.single("image"), a
 router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
     const ordersDbConnection = connectToMongo("ShopOwners");
     // Destructuring the parameters tht ll be given in the request.
-    const {productName, productPrice, productTags, productDescription} = req.body;
+    const {productName, productPrice, productTags, productDescription, productColor} = req.body;
 
     // First loading the product to be updated.
-    let updatedProduct = await ordersDbConnection(req.user.id, productSchema).findById(req.params.id);
+    let updatedProduct = await ordersDbConnection.model(req.user.id, productSchema).findById(req.params.id);
 
     if (!updatedProduct) {
         res.statusCode = 404;
@@ -191,15 +191,18 @@ router.put('/updatemyproduct/:id',fetchseller,async (req,res)=>{
     if (productDescription) {
         updatedProduct.description = productDescription;
     }
+    if(productColor){
+        updatedProduct.color = productColor;
+    }
     if (req.query.imageurl) {
         const lastSlashIndex = req.query.imageurl.lastIndexOf("/");
         const updatedImageUrl = req.query.imageurl.substring(0, lastSlashIndex) + "%2F" + req.query.imageurl.substring(lastSlashIndex + 1);
         updatedProduct.image = `${(updatedImageUrl)}&token=${(req.query.token)}`;
     }
 
-    await ordersDbConnection(req.user.id, productSchema).findByIdAndUpdate(req.params.id,{$set: updatedProduct},{new: false});
+    await ordersDbConnection.model(req.user.id, productSchema).findByIdAndUpdate(req.params.id,{$set: updatedProduct},{new: false});
 
-    res.json({updatedProduct});
+    res.json(updatedProduct);
 
 })
 

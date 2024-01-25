@@ -27,6 +27,11 @@ const orderSchema = new Schema({
     qantity: {
         type: Number,
         required: true,
+    },
+    imageurl: {
+        type: String,
+        defaultValue : "",
+        required: false,
     }
     
 });

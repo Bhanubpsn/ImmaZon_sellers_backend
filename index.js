@@ -5,7 +5,6 @@ import authRoute from "./routes/auth.js"
 import productRoute from "./routes/product.js"
 import ordersRoute from "./routes/orders.js"
 import dotenv from 'dotenv';
-import changedb from "./config/changedb.js";
 dotenv.config();
 
 // Connecting to database 'ShopOwners'.By defalut.

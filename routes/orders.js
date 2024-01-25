@@ -1,8 +1,5 @@
 import express, { response } from 'express';
 const router = express.Router();
-import mongoose from "mongoose";
-import createOrderModel from '../models/orderModel.js';
-
 import connectToMongo from '../db.js';
 import orderSchema from '../models/schema/order.js';
 
