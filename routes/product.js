@@ -58,6 +58,8 @@ router.post('/addmyproduct',[
             productname: req.body.productname,
             price: req.body.price,
             tags: req.body.tags,
+            color: req.body.color,
+            size: req.body.size,
             sellerid: req.header('sellerid'),
             description: req.body.description,
         })
@@ -125,7 +127,7 @@ router.delete('/deletemyproduct/:id',fetchseller,async (req,res)=>{
 })
 
 // POST route to upload image of the image.
-router.get("/uploadproductimage/:sellerid/:productid", upload.single("image"), async (req, res) => {
+router.post("/uploadproductimage/:sellerid/:productid", upload.single("image"), async (req, res) => {
     //This image is the key name in the post body.
     const ordersDbConnection = connectToMongo("ShopOwners");
     try {
@@ -150,8 +152,9 @@ router.get("/uploadproductimage/:sellerid/:productid", upload.single("image"), a
         const downloadURL = await getDownloadURL(snapshot.ref);
 
         console.log('File successfully uploaded.');
-        return res.status(200).json({
+        return res.status(200).json({   
             message: 'file uploaded to firebase storage',
+            success: true,
             name: req.file.originalname,
             downloadURL: downloadURL
         })

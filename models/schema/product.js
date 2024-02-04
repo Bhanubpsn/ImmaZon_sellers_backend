@@ -11,9 +11,9 @@ const productSchema = new Schema({
         type: [String],
         default: [],
         required: false,
-    },
+    }, 
     size:{
-        type: [Number],
+        type: [String],
         default: [],
         required: false,
     },
